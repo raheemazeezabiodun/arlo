@@ -260,12 +260,6 @@ describe('DataEntry', () => {
               choiceIds: ['choice-id-1'],
               comment: null,
             },
-            {
-              contestId: 'contest-id-2',
-              interpretation: 'CANT_AGREE',
-              choiceIds: [],
-              comment: null,
-            },
           ],
         }),
         apiCalls.getBallotsOneAudited,
@@ -290,20 +284,13 @@ describe('DataEntry', () => {
         screen.getByRole('heading', { name: 'Contest 1' })
         userEvent.click(screen.getByRole('checkbox', { name: 'Choice One' }))
         screen.getByRole('heading', { name: 'Contest 2' })
-        userEvent.click(
-          screen.getAllByRole('checkbox', {
-            name: "Audit board can't agree",
-          })[1]
-        )
 
         // Review the choices
         userEvent.click(screen.getByRole('button', { name: 'Review' }))
         expect(
           await screen.findByRole('button', { name: 'Choice One' })
         ).toBeDisabled()
-        expect(
-          screen.getByRole('button', { name: "Audit board can't agree" })
-        ).toBeDisabled()
+
         expect(screen.queryByText('Choice Two')).not.toBeInTheDocument()
         expect(screen.queryByText('Choice Three')).not.toBeInTheDocument()
         expect(screen.queryByText('Choice Four')).not.toBeInTheDocument()

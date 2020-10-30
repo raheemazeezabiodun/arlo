@@ -18,6 +18,11 @@ const LockedButton = styled(FormButton)`
   text-align: center;
 `
 
+const HideLockedButton = styled(FormButton)`
+  display: none;
+  text-align: center;
+`
+
 const renderInterpretation = (
   { interpretation, choiceIds }: IBallotInterpretation,
   contest: IContest
@@ -40,9 +45,9 @@ const renderInterpretation = (
       )
     case Interpretation.CANT_AGREE:
       return (
-        <LockedButton disabled large intent="primary">
+        <HideLockedButton disabled large intent="primary">
           Audit board can&apos;t agree
-        </LockedButton>
+        </HideLockedButton>
       )
     default:
       return null
