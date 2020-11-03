@@ -201,7 +201,7 @@ def cumulative_batch_results(election: Election) -> BatchTallies:
 def cvrs_for_contest(contest: Contest) -> supersimple.CVRS:
     choice_name_to_id = {choice.name: choice.id for choice in contest.choices}
 
-    cvrs: supersimple.CVRS = defaultdict(lambda: {contest.id: {}})
+    cvrs: supersimple.CVRS = {}
 
     for jurisdiction in contest.jurisdictions:
         cvr_contests_metadata = typing_cast(
@@ -209,7 +209,7 @@ def cvrs_for_contest(contest: Contest) -> supersimple.CVRS:
         )
         choices_metadata = cvr_contests_metadata[contest.name]["choices"]
 
-        interpretations_query = (
+        interpretations_by_ballot = (
             CvrBallot.query.join(Batch)
             .filter_by(jurisdiction_id=jurisdiction.id)
             .join(
@@ -219,23 +219,11 @@ def cvrs_for_contest(contest: Contest) -> supersimple.CVRS:
                     CvrBallot.ballot_position == SampledBallot.ballot_position,
                 ),
             )
+            .values(SampledBallot.id, CvrBallot.interpretations)
         )
-        # For targeted contests, use the ticket number to key the ballots so
-        # that we count all sample draws
-        if contest.is_targeted:
-            interpretations_by_ballot = (
-                interpretations_query.join(SampledBallotDraw)
-                .filter(SampledBallotDraw.contest_id == contest.id)
-                .values(SampledBallotDraw.ticket_number, CvrBallot.interpretations)
-            )
-        # For opportunistic contests, use the ballot id to key the ballots so
-        # that we only count unique ballots
-        else:
-            interpretations_by_ballot = interpretations_query.values(
-                SampledBallot.id, CvrBallot.interpretations
-            )
 
         for ballot_key, interpretations_str in interpretations_by_ballot:
+            ballot_cvr: supersimple.CVR = {contest.id: {}}
             # interpretations is the raw CVR string: 1,0,0,1,0,1,0. We need to
             # pick out the interpretation for each contest choice. We saved the
             # column index for each choice when we parsed the CVR.
@@ -246,44 +234,62 @@ def cvrs_for_contest(contest: Contest) -> supersimple.CVRS:
                 # on the ballot, so we should skip this contest entirely for
                 # this ballot.
                 if interpretation == "":
-                    cvrs[ballot_key] = {}
+                    ballot_cvr = {}
                 else:
                     choice_id = choice_name_to_id[choice_name]
-                    cvrs[ballot_key][contest.id][choice_id] = int(interpretation)
+                    ballot_cvr[contest.id][choice_id] = int(interpretation)
 
-    return dict(cvrs)
+            cvrs[ballot_key] = ballot_cvr
+
+    return cvrs
 
 
-def sampled_ballot_interpretations_to_cvrs(contest: Contest) -> supersimple.CVRS:
-    interpretations_query = BallotInterpretation.query.filter_by(
-        contest_id=contest.id
-    ).outerjoin(BallotInterpretation.selected_choices)
-    # For targeted contests, use the ticket number to key the ballots so that
-    # we count all sample draws
+def sampled_ballot_interpretations_to_cvrs(contest: Contest) -> supersimple.SAMPLE_CVRS:
+    ballots_query = (
+        SampledBallot.query.join(Batch)
+        .join(Jurisdiction)
+        .filter(Jurisdiction.contests.contains(contest))
+    )
+    # For targeted contests, count the number of times the ballot was sampled
     if contest.is_targeted:
-        interpretations = (
-            interpretations_query.join(
-                SampledBallotDraw,
-                BallotInterpretation.ballot_id == SampledBallotDraw.ballot_id,
-            )
-            .filter(SampledBallotDraw.contest_id == contest.id)
-            .with_entities(SampledBallotDraw.ticket_number, BallotInterpretation)
+        ballots = (
+            ballots_query.join(SampledBallotDraw)
+            .filter_by(contest_id=contest.id)
+            .group_by(SampledBallot.id)
+            .with_entities(SampledBallot, func.count(SampledBallotDraw.ticket_number))
             .all()
         )
-    # For opportunistic contests, use the ballot id to key the ballots so that
-    # we only count unique ballots
+    # For opportunistic contests, we say each ballot was only sampled once
     else:
-        interpretations = interpretations_query.with_entities(
-            BallotInterpretation.ballot_id, BallotInterpretation
-        ).all()
+        ballots = ballots_query.with_entities(SampledBallot, literal(1)).all()
 
-    cvrs = {}
-    for ballot_key, interpretation in interpretations:
-        cvrs[ballot_key] = {contest.id: {choice.id: 0 for choice in contest.choices}}
-        # TODO maybe make Interpretation.CANT_AGREE a vote for the loser?
-        if interpretation.interpretation == Interpretation.VOTE:
-            for choice in interpretation.selected_choices:
-                cvrs[ballot_key][contest.id][choice.id] = 1
+    # The CVR we build should have a 1 for each choice that got voted for,
+    # and a 0 otherwise. There are a couple special cases:
+    # - Contest wasn't on the ballot - CVR should be an empty object
+    # - Audit board couldn't find the ballot - CVR should be None
+    cvrs: supersimple.SAMPLE_CVRS = {}
+    for ballot, times_sampled in ballots:
+        if ballot.status == BallotStatus.NOT_FOUND:
+            cvrs[ballot.id] = {"times_sampled": times_sampled, "cvr": None}
+
+        elif ballot.status == BallotStatus.AUDITED:
+            interpretation = next(
+                (
+                    interpretation
+                    for interpretation in ballot.interpretations
+                    if interpretation.contest_id == contest.id
+                ),
+                None,
+            )
+            if interpretation is None:  # Contest not on ballot
+                ballot_cvr = {}
+            else:
+                ballot_cvr = {contest.id: {choice.id: 0 for choice in contest.choices}}
+                if interpretation.interpretation == Interpretation.VOTE:
+                    for choice in interpretation.selected_choices:
+                        ballot_cvr[contest.id][choice.id] = 1
+
+            cvrs[ballot.id] = {"times_sampled": times_sampled, "cvr": ballot_cvr}
 
     return cvrs
 
