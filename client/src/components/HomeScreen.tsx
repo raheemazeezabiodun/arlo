@@ -188,7 +188,7 @@ interface IValues {
   organizationId: string
   auditName: string
   auditType: IAuditSettings['auditType']
-  ballotPollingType: IAuditSettings['ballotPollingType']
+  auditMathType: IAuditSettings['auditMathType']
 }
 
 const CreateAuditWrapper = styled.div`
@@ -220,7 +220,7 @@ const CreateAudit: React.FC = () => {
     organizationId,
     auditName,
     auditType,
-    ballotPollingType,
+    auditMathType,
   }: IValues) => {
     setSubmitting(true)
     const response: { electionId: string } | null = await api('/election', {
@@ -229,7 +229,7 @@ const CreateAudit: React.FC = () => {
         organizationId,
         auditName,
         auditType,
-        ballotPollingType,
+        auditMathType,
       }),
       headers: {
         'Content-Type': 'application/json',
@@ -249,7 +249,7 @@ const CreateAudit: React.FC = () => {
         organizationId: meta!.organizations[0].id,
         auditName: '',
         auditType: 'BALLOT_POLLING',
-        ballotPollingType: 'BRAVO',
+        auditMathType: 'BRAVO',
       }}
     >
       {({ handleSubmit, setFieldValue, values }: FormikProps<IValues>) => (
@@ -302,17 +302,14 @@ const CreateAudit: React.FC = () => {
                 <Radio value="BALLOT_POLLING">Ballot Polling</Radio>
                 {values.auditType === 'BALLOT_POLLING' ? (
                   <BallotPollingWrapper>
-                    <label htmlFor="ballotPollingType">
+                    <label htmlFor="auditMathType">
                       <p>Ballot polling type</p>
                       <RadioGroup
-                        name="ballotPollingType"
+                        name="auditMathType"
                         onChange={e =>
-                          setFieldValue(
-                            'ballotPollingType',
-                            e.currentTarget.value
-                          )
+                          setFieldValue('auditMathType', e.currentTarget.value)
                         }
-                        selectedValue={values.ballotPollingType}
+                        selectedValue={values.auditMathType}
                       >
                         <Radio value="BRAVO">BRAVO</Radio>
                         <Radio value="MINERVA">Minerva (Not recommended)</Radio>
