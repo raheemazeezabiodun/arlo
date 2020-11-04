@@ -12,12 +12,12 @@ export function isObjectEqual(
 ): boolean {
   if (object1 === object2) return true
 
-  const keysA = Object.keys(object1)
-  const keysB = Object.keys(object2)
+  const keys1 = Object.keys(object1)
+  const keys2 = Object.keys(object2)
 
-  if (keysA.length !== keysB.length) return false
-  for (const key of keysA) {
-    if (!keysB.includes(key)) return false
+  if (keys1.length !== keys2.length) return false
+  for (const key of keys1) {
+    if (!keys2.includes(key)) return false
 
     if (
       typeof object1[key] === 'function' ||
