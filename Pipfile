@@ -38,6 +38,8 @@ sqlalchemy-utils = "==0.36.7"
 xkcdpass = "*"
 sqlalchemy = "*"
 typing-extensions = "*"
+pytest-testmon = "*"
+sentry-sdk = {extras = ["flask"], version = "*"}
 
 [requires]
 python_version = "3.8"
