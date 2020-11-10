@@ -64,7 +64,9 @@ def count_audited_votes(election: Election, round: Round):
             if election.online:
                 interpretations_query = (
                     BallotInterpretation.query.filter_by(
-                        contest_id=contest.id, is_overvote=False
+                        contest_id=contest.id,
+                        is_overvote=False,
+                        interpretation=Interpretation.VOTE,
                     )
                     .join(SampledBallot)
                     .join(SampledBallotDraw)
@@ -310,12 +312,13 @@ def calculate_risk_measurements(election: Election, round: Round):
         contest = round_contest.contest
 
         if election.audit_type == AuditType.BALLOT_POLLING:
+            assert election.audit_math_type is not None
             p_values, is_complete = ballot_polling.compute_risk(
                 election.risk_limit,
                 sampler_contest.from_db_contest(contest),
                 contest_results_by_round(contest),
+                AuditMathType(election.audit_math_type),
                 round_sizes(election),
-                BallotPollingType.BRAVO,
             )
             p_value = max(p_values.values())
         elif election.audit_type == AuditType.BATCH_COMPARISON:
@@ -508,7 +511,7 @@ def sample_ballots(
             for (ticket_number, ballot_key, _) in sample
         ]
 
-    # Draw a sample for each targeted contest
+    # Draw a sample for each contest
     samples = [
         draw_sample_for_contest(contest, sample_sizes[contest.id])
         for contest in contests
@@ -661,13 +664,19 @@ def create_round(election: Election):
     # In later rounds, select a sample size automatically.
     else:
         sample_size_options = sample_sizes_module.sample_size_options(election)
-        sample_size_key = {
-            AuditType.BALLOT_POLLING: "0.9",
-            AuditType.BATCH_COMPARISON: "macro",
-            AuditType.BALLOT_COMPARISON: "supersimple",
-        }[AuditType(election.audit_type)]
+
+        def select_sample_size(options):
+            audit_type = AuditType(election.audit_type)
+            if audit_type == AuditType.BALLOT_POLLING:
+                return options.get("0.9", options["asn"])
+            elif audit_type == AuditType.BATCH_COMPARISON:
+                return options["macro"]
+            else:
+                assert audit_type == AuditType.BALLOT_COMPARISON
+                return options["supersimple"]
+
         sample_sizes = {
-            contest_id: options[sample_size_key]["size"]
+            contest_id: select_sample_size(options)["size"]
             for contest_id, options in sample_size_options.items()
         }
 

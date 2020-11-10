@@ -9,11 +9,7 @@ import { auditSettings } from './MultiJurisdictionAudit/useSetupMenuItems/_mocks
 const apiCalls = {
   unauthenticatedUser: {
     url: '/api/me',
-    response: {},
-    error: {
-      status: 401,
-      statusText: 'UNAUTHORIZED',
-    },
+    response: null,
   },
   postNewAudit: (body: {}) => ({
     url: '/api/election',
@@ -74,7 +70,7 @@ const apiCalls = {
 }
 
 const setupScreenCalls = [
-  aaApiCalls.getRounds,
+  aaApiCalls.getRounds([]),
   aaApiCalls.getJurisdictions,
   aaApiCalls.getContests,
   aaApiCalls.getSettings(auditSettings.blank),
@@ -102,6 +98,14 @@ describe('Home screen', () => {
     })
   })
 
+  it('shows a message when logged out for inactivity', async () => {
+    const expectedCalls = [apiCalls.unauthenticatedUser]
+    await withMockFetch(expectedCalls, async () => {
+      renderView('/#logged-out')
+      await screen.findByText('You have been logged out due to inactivity.')
+    })
+  })
+
   it.skip('shows a list of audits and create audit form for audit admins', async () => {
     // TEST TODO
     const expectedCalls = [
@@ -111,17 +115,18 @@ describe('Home screen', () => {
         organizationId: 'org-id',
         auditName: 'November Presidential Election 2020',
         auditType: 'BATCH_COMPARISON',
+        auditMathType: 'MACRO',
       }),
       ...setupScreenCalls,
       aaApiCalls.getJurisdictionFile,
-      aaApiCalls.getRounds,
+      aaApiCalls.getRounds([]),
       ...setupScreenCalls,
       aaApiCalls.getSettings(auditSettings.blank),
       aaApiCalls.getJurisdictionFile,
       apiCalls.getUserWithAudit,
       ...setupScreenCalls,
       aaApiCalls.getJurisdictionFile,
-      aaApiCalls.getRounds,
+      aaApiCalls.getRounds([]),
       ...setupScreenCalls,
       aaApiCalls.getSettings(auditSettings.blank),
       aaApiCalls.getJurisdictionFile,
@@ -182,10 +187,11 @@ describe('Home screen', () => {
         organizationId: 'org-id-2',
         auditName: 'Presidential Primary',
         auditType: 'BALLOT_POLLING',
+        auditMathType: 'BRAVO',
       }),
       ...setupScreenCalls,
       aaApiCalls.getJurisdictionFile,
-      aaApiCalls.getRounds,
+      aaApiCalls.getRounds([]),
       ...setupScreenCalls,
       aaApiCalls.getSettings(auditSettings.blank),
       aaApiCalls.getJurisdictionFile,

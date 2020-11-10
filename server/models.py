@@ -32,9 +32,11 @@ class AuditType(str, enum.Enum):
     BALLOT_COMPARISON = "BALLOT_COMPARISON"
 
 
-class BallotPollingType(str, enum.Enum):
+class AuditMathType(str, enum.Enum):
     BRAVO = "BRAVO"
     MINERVA = "MINERVA"
+    SUPERSIMPLE = "SUPERSIMPLE"
+    MACRO = "MACRO"
 
 
 # Election is a slight misnomer - this model represents an audit.
@@ -43,6 +45,7 @@ class Election(BaseModel):
     # audit_name must be unique within each Organization
     audit_name = Column(String(200), nullable=False)
     audit_type = Column(Enum(AuditType), nullable=False)
+    audit_math_type = Column(Enum(AuditMathType), nullable=False)
     # election_name can be the same across audits
     election_name = Column(String(200))
     state = Column(String(100))
@@ -453,6 +456,7 @@ class SampledBallot(BaseModel):
         uselist=True,
         cascade="all, delete-orphan",
         passive_deletes=True,
+        order_by="BallotInterpretation.created_at",
     )
 
 
@@ -487,6 +491,7 @@ class SampledBallotDraw(BaseModel):
 class Interpretation(str, enum.Enum):
     BLANK = "BLANK"
     CANT_AGREE = "CANT_AGREE"
+    CONTEST_NOT_ON_BALLOT = "CONTEST_NOT_ON_BALLOT"
     VOTE = "VOTE"
 
 
