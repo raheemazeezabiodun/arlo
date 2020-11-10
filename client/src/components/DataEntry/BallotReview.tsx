@@ -18,11 +18,6 @@ const LockedButton = styled(FormButton)`
   text-align: center;
 `
 
-const HideLockedButton = styled(FormButton)`
-  display: none;
-  text-align: center;
-`
-
 const renderInterpretation = (
   { interpretation, choiceIds }: IBallotInterpretation,
   contest: IContest
