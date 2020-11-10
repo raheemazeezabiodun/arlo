@@ -991,13 +991,13 @@ exports[`App /election/:electionId/jurisdiction/:jurisdictionId renders ja logge
     class="Toastify"
   />
   <div
-    class="sc-dqBHgY hjqzBG"
+    class="sc-kafWEX jPtLBX"
   >
     <div
       class="bp3-navbar sc-EHOje gMcVig"
     >
       <div
-        class="sc-bxivhb sc-bZQynM ftKVqf"
+        class="sc-bxivhb sc-bZQynM ezCmGO"
       >
         <div
           class="bp3-navbar-group bp3-align-left"
@@ -1041,13 +1041,13 @@ exports[`App /election/:electionId/jurisdiction/:jurisdictionId renders ja logge
       </div>
     </div>
     <div
-      class="sc-htpNat eniUlo"
+      class="sc-htpNat cBZqYS"
     >
       <div
-        class="bp3-callout sc-cvbbAY diAOwm"
+        class="bp3-callout sc-jWBwVP fjauOu"
       >
         <div
-          class="sc-bxivhb ddQihQ"
+          class="sc-bxivhb hMnACT"
         >
           <div
             class="text"
@@ -1058,13 +1058,13 @@ exports[`App /election/:electionId/jurisdiction/:jurisdictionId renders ja logge
               The audit has not started.
             </h4>
             <p>
-              Ballot manifest not uploaded.
+              0/2 files uploaded.
             </p>
           </div>
         </div>
       </div>
       <div
-        class="sc-bxivhb sc-caSCKo dwxpIg"
+        class="sc-bxivhb sc-gisBJw giLvNa"
       >
         <h2
           class="bp3-heading sc-gzVnrw hQaoin"

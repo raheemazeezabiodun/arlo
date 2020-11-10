@@ -6,6 +6,7 @@ import { withMockFetch, renderWithRouter } from './components/testUtilities'
 import { dummyBoards } from './components/DataEntry/_mocks'
 import {
   auditSettings,
+  cvrMocks,
   manifestMocks,
   talliesMocks,
 } from './components/MultiJurisdictionAudit/useSetupMenuItems/_mocks'
@@ -134,14 +135,14 @@ describe('App', () => {
       })
     })
 
-    it.skip('renders ja logged in properly', async () => {
-      // TEST TODO
+    it('renders ja logged in properly', async () => {
       const expectedCalls = [
         jaApiCalls.getUser,
         jaApiCalls.getSettings(auditSettings.batchComparisonAll),
         jaApiCalls.getRounds,
         jaApiCalls.getBallotManifestFile(manifestMocks.empty),
         jaApiCalls.getBatchTalliesFile(talliesMocks.empty),
+        jaApiCalls.getCVRs(cvrMocks.empty),
       ]
       await withMockFetch(expectedCalls, async () => {
         const { container } = renderView(

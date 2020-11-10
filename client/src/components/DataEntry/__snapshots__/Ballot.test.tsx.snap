@@ -622,7 +622,7 @@ exports[`Ballot selects Audit board can't agree 1`] = `
             class="sc-fjdhpX hpwbXA"
           >
             <button
-              class="bp3-button bp3-disabled bp3-large bp3-intent-primary sc-cSHVUG khDxVf sc-htoDjs dESvso"
+              class="bp3-button bp3-disabled bp3-large bp3-intent-primary sc-cSHVUG jhLraH sc-htoDjs dESvso"
               disabled=""
               tabindex="-1"
               type="button"

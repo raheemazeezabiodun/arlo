@@ -102,7 +102,7 @@ describe('Home screen', () => {
     })
   })
 
-  it.skip('shows a list of audits and create audit form for audit admins', async () => {
+  it('shows a list of audits and create audit form for audit admins', async () => {
     // TEST TODO
     const expectedCalls = [
       aaApiCalls.getUser,

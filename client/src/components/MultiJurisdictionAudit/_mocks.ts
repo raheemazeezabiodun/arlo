@@ -74,6 +74,10 @@ export const jaApiCalls = {
     url: '/api/election/1/jurisdiction/jurisdiction-id-1/settings',
     response,
   }),
+  getCVRs: (response: IFileInfo) => ({
+    url: '/api/election/1/jurisdiction/jurisdiction-id-1/cvrs',
+    response,
+  }),
   putManifest: {
     url: '/api/election/1/jurisdiction/jurisdiction-id-1/ballot-manifest',
     options: {
