@@ -43,6 +43,7 @@ export enum Interpretation {
   BLANK = 'BLANK',
   CANT_AGREE = 'CANT_AGREE',
   VOTE = 'VOTE',
+  CONTEST_NOT_ON_BALLOT = 'CONTEST_NOT_ON_BALLOT',
 }
 
 export interface IBallotInterpretation {
@@ -178,5 +179,6 @@ export interface IAuditSettings {
   randomSeed: string | null
   riskLimit: number | null
   auditType: 'BALLOT_POLLING' | 'BATCH_COMPARISON' | 'BALLOT_COMPARISON'
+  auditMathType: 'BRAVO' | 'MINERVA' | 'SUPERSIMPLE' | 'MACRO'
   auditName: string
 }

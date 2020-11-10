@@ -10,7 +10,7 @@ As part of the audit, Arlo:
 
 - Randomly selects individual ballots to be examined from a list of all ballots cast in particular contest(s), and provides auditors with the information they need to find those ballots in storage
 
-- Provides supplemental materials necessary to maintain chain of custory while retrieving ballots
+- Provides supplemental materials necessary to maintain chain of custody while retrieving ballots
 
 - Checks whether votes recorded by auditors examining each ballot match what we would expect if the reported outcome is correct, more specifically whether the desired risk-limit has been achieved based on these results
 
@@ -155,7 +155,7 @@ We recommend Ubuntu 18.0.4.
 
 #### Automatic configuration and setup
 
-If you would just like to run Arlo and do not wish to setup a custom configuration, you can run `pipenv run python -m scripts.setup-dev`, which provides interactive configuration. The script optionally installs VotingWorks' [nOAuth](https://github.com/votingworks/nOAuth) locally, runs it, and configures Arlo to use it. It creates the necessary audit administrator and jurisdiction administrator credentials discussed above, and launches a dev instance of Arlo. Once you have navigated to `localhost:3000` in your broswer, you should be able to log in as an audit admin using the credentials you configured earlier in the script. 
+If you would just like to run Arlo and do not wish to setup a custom configuration, you can run `pipenv run python -m scripts.setup-dev`, which provides interactive configuration. The script optionally installs VotingWorks' [nOAuth](https://github.com/votingworks/nOAuth) locally, runs it, and configures Arlo to use it. It creates the necessary audit administrator and jurisdiction administrator credentials discussed above, and launches a dev instance of Arlo. Once you have navigated to `localhost:3000` in your broswer, you should be able to log in as an audit admin using the credentials you configured earlier in the script.
 
 #### Troubleshooting
 

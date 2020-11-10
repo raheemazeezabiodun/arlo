@@ -80,6 +80,8 @@ def pretty_ballot_interpretation(
     interpretation = next(
         (i for i in interpretations if i.contest_id == contest.id), None,
     )
+    # Legacy case: we used to not require an interpretation for every contest
+    # before we had Interpretation.CONTEST_NOT_ON_BALLOT
     if not interpretation:
         return ""
 
@@ -181,10 +183,18 @@ def contest_rows(election: Election):
 def audit_settings_rows(election: Election):
     return [
         heading("AUDIT SETTINGS"),
-        ["Audit Name", "Audit Type", "Risk Limit", "Random Seed", "Online Data Entry?"],
+        [
+            "Audit Name",
+            "Audit Type",
+            "Audit Math Type",
+            "Risk Limit",
+            "Random Seed",
+            "Online Data Entry?",
+        ],
         [
             election.audit_name,
             election.audit_type,
+            election.audit_math_type,
             f"{election.risk_limit}%",
             election.random_seed,
             pretty_boolean(election.online),

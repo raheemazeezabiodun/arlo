@@ -5,8 +5,9 @@ import {
   RadioGroup,
   Radio,
   HTMLSelect,
+  Callout,
 } from '@blueprintjs/core'
-import { useHistory } from 'react-router-dom'
+import { useHistory, useLocation } from 'react-router-dom'
 import styled from 'styled-components'
 import { Formik, FormikProps, Field } from 'formik'
 import { useAuthDataContext } from './UserContext'
@@ -72,9 +73,20 @@ const LoginWrapper = styled.div`
 `
 
 const LoginScreen: React.FC = () => {
+  const wasLoggedOut = useLocation().hash === '#logged-out'
+
   return (
     <LoginWrapper>
       <img height="50px" src="/arlo.png" alt="Arlo, by VotingWorks" />
+      {wasLoggedOut && (
+        <Callout
+          icon="lock"
+          intent="warning"
+          style={{ margin: '20px 0 20px 0' }}
+        >
+          You have been logged out due to inactivity.
+        </Callout>
+      )}
       <Card style={{ margin: '25px 0 15px 0' }}>
         <p>Participating in an audit in your local jurisdiction?</p>
         <AnchorButton
@@ -188,11 +200,21 @@ interface IValues {
   organizationId: string
   auditName: string
   auditType: IAuditSettings['auditType']
+  auditMathType: IAuditSettings['auditMathType']
 }
 
 const CreateAuditWrapper = styled.div`
   background-color: #ebf1f5;
   padding: 30px;
+`
+
+const BallotPollingWrapper = styled.div`
+  margin: 20px 0;
+  background-color: #ffffff;
+  padding-top: 10px;
+  padding-bottom: 5px;
+  padding-left: 20px;
+  font-size: 85%;
 `
 
 const WideField = styled(FormField)`
@@ -208,6 +230,7 @@ const CreateAudit: React.FC = () => {
     organizationId,
     auditName,
     auditType,
+    auditMathType,
   }: IValues) => {
     setSubmitting(true)
     const response: { electionId: string } | null = await api('/election', {
@@ -216,6 +239,7 @@ const CreateAudit: React.FC = () => {
         organizationId,
         auditName,
         auditType,
+        auditMathType,
       }),
       headers: {
         'Content-Type': 'application/json',
@@ -235,9 +259,15 @@ const CreateAudit: React.FC = () => {
         organizationId: meta!.organizations[0].id,
         auditName: '',
         auditType: 'BALLOT_POLLING',
+        auditMathType: 'BRAVO',
       }}
     >
-      {({ handleSubmit, setFieldValue, values }: FormikProps<IValues>) => (
+      {({
+        handleSubmit,
+        setFieldValue,
+        setValues,
+        values,
+      }: FormikProps<IValues>) => (
         <CreateAuditWrapper>
           <h2>New Audit</h2>
           <FormSection>
@@ -279,12 +309,38 @@ const CreateAudit: React.FC = () => {
               <p>Audit type</p>
               <RadioGroup
                 name="auditType"
-                onChange={e =>
-                  setFieldValue('auditType', e.currentTarget.value)
-                }
+                onChange={e => {
+                  const auditType = e.currentTarget
+                    .value as IValues['auditType']
+                  const auditMathType = {
+                    BALLOT_POLLING: 'BRAVO',
+                    BALLOT_COMPARISON: 'SUPERSIMPLE',
+                    BATCH_COMPARISON: 'MACRO',
+                  }[auditType] as IValues['auditMathType']
+                  setValues({ ...values, auditType, auditMathType })
+                }}
                 selectedValue={values.auditType}
               >
                 <Radio value="BALLOT_POLLING">Ballot Polling</Radio>
+                {/* For now, disable switching audit math type in production */}
+                {process.env.NODE_ENV !== 'production' &&
+                values.auditType === 'BALLOT_POLLING' ? (
+                  <BallotPollingWrapper>
+                    <label htmlFor="auditMathType">
+                      <p>Ballot polling type</p>
+                      <RadioGroup
+                        name="auditMathType"
+                        onChange={e =>
+                          setFieldValue('auditMathType', e.currentTarget.value)
+                        }
+                        selectedValue={values.auditMathType}
+                      >
+                        <Radio value="BRAVO">BRAVO</Radio>
+                        <Radio value="MINERVA">Minerva (Not recommended)</Radio>
+                      </RadioGroup>
+                    </label>
+                  </BallotPollingWrapper>
+                ) : null}
                 <Radio value="BATCH_COMPARISON">Batch Comparison</Radio>
                 <Radio value="BALLOT_COMPARISON">Ballot Comparison</Radio>
               </RadioGroup>
